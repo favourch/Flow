@@ -318,8 +318,16 @@ class FlowTypingEngine {
             try {
                 let execSuccess = false;
                 if (isEnter) {
-                    execSuccess = document.execCommand('insertParagraph', false) || 
-                                 document.execCommand('insertHTML', false, '<br>');
+                    // For line breaks, use insertParagraph to create proper paragraphs
+                    execSuccess = document.execCommand('insertParagraph', false);
+                    if (!execSuccess) {
+                        // Fallback to insertHTML with proper paragraph structure
+                        execSuccess = document.execCommand('insertHTML', false, '<p><br></p>');
+                    }
+                    if (!execSuccess) {
+                        // Last resort: simple line break
+                        execSuccess = document.execCommand('insertHTML', false, '<br>');
+                    }
                 } else {
                     execSuccess = document.execCommand('insertText', false, char);
                 }
@@ -594,7 +602,16 @@ class FlowTypingEngine {
         // Step 1: Normalize Unicode characters
         let cleaned = text.normalize('NFD');
         
-        // Step 2: Remove or replace problematic UTF characters
+        // Step 2: Preserve paragraph structure by normalizing line breaks
+        cleaned = cleaned
+            // Normalize different line break patterns to single \n
+            .replace(/\r\n/g, '\n')  // Windows line breaks
+            .replace(/\r/g, '\n')    // Mac line breaks
+            
+            // Preserve double line breaks as paragraph separators
+            .replace(/\n\s*\n/g, '\n\n')  // Normalize paragraph breaks
+        
+        // Step 3: Remove or replace problematic UTF characters
         cleaned = cleaned
             // Replace smart quotes with regular quotes
             .replace(/[\u2018\u2019]/g, "'")  // Smart single quotes
@@ -609,7 +626,7 @@ class FlowTypingEngine {
             // Replace non-breaking spaces with regular spaces
             .replace(/\u00A0/g, ' ')
             
-            // Replace various whitespace characters with regular spaces
+            // Replace various whitespace characters with regular spaces (but preserve line breaks)
             .replace(/[\u2000-\u200B\u2028\u2029]/g, ' ')
             
             // Remove zero-width characters
@@ -629,14 +646,16 @@ class FlowTypingEngine {
             .replace(/\u00AE/g, '(R)')
             .replace(/\u2122/g, '(TM)')
             
-            // Clean up multiple spaces
-            .replace(/\s+/g, ' ')
+            // Clean up multiple spaces (but preserve single line breaks)
+            .replace(/[ \t]+/g, ' ')  // Multiple spaces/tabs to single space
+            .replace(/[ \t]*\n[ \t]*/g, '\n')  // Remove spaces around line breaks
             
-            // Trim leading/trailing whitespace
-            .trim();
+            // Trim leading/trailing whitespace but preserve internal structure
+            .replace(/^\s+|\s+$/g, '');
         
         console.log('Flow: Cleaned text length:', cleaned.length);
         console.log('Flow: Character changes:', text.length - cleaned.length);
+        console.log('Flow: Paragraph breaks detected:', (cleaned.match(/\n\n/g) || []).length);
         
         return cleaned;
     }
@@ -657,14 +676,30 @@ class FlowTypingEngine {
             return content;
         });
         
-        // Italic (*text* or _text_)
+        // Reset offset for italic parsing
         offset = 0;
-        cleanText = cleanText.replace(/(\*|_)(.*?)\1/g, (match, marker, content, index) => {
+        
+        // Italic (*text* or _text_) - but avoid conflict with bold
+        cleanText = cleanText.replace(/(?<!\*)\*([^*]+)\*(?!\*)|(?<!_)_([^_]+)_(?!_)/g, (match, content1, content2, index) => {
+            const content = content1 || content2;
             const start = index - offset;
             const end = start + content.length;
             formattingMap.set(start, { type: 'italic', action: 'start' });
             formattingMap.set(end, { type: 'italic', action: 'end' });
-            offset += marker.length * 2;
+            offset += match.length - content.length; // Account for removed markers
+            return content;
+        });
+        
+        // Reset offset for underline parsing
+        offset = 0;
+        
+        // Underline (~~text~~)
+        cleanText = cleanText.replace(/~~(.*?)~~/g, (match, content, index) => {
+            const start = index - offset;
+            const end = start + content.length;
+            formattingMap.set(start, { type: 'underline', action: 'start' });
+            formattingMap.set(end, { type: 'underline', action: 'end' });
+            offset += 4; // Account for removed ~~ markers
             return content;
         });
         
