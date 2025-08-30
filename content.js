@@ -7,7 +7,9 @@ class FlowTypingEngine {
         this.settings = {};
         this.typingTimeout = null;
         this.editor = null;
+        this.overlay = null;
         this.setupMessageListener();
+        this.createOverlay();
     }
 
     setupMessageListener() {
@@ -30,6 +32,18 @@ class FlowTypingEngine {
                     break;
                 case 'resumeTyping':
                     this.resumeTyping();
+                    sendResponse({ success: true });
+                    break;
+                case 'createMiniPlayer':
+                    this.createMiniPlayer(message.settings);
+                    sendResponse({ success: true });
+                    break;
+                case 'showOverlay':
+                    this.showOverlay();
+                    sendResponse({ success: true });
+                    break;
+                case 'hideOverlay':
+                    this.hideOverlay();
                     sendResponse({ success: true });
                     break;
             }
@@ -228,7 +242,10 @@ class FlowTypingEngine {
         }
         this.sendMessage({ action: 'typingStopped' });
         
-        // Flow has stopped
+        // Remove mini player when stopped
+        if (this.miniPlayer) {
+            this.removeMiniPlayer();
+        }
     }
 
     pauseTyping() {
@@ -286,7 +303,10 @@ class FlowTypingEngine {
             percentage: percentage
         });
         
-        // Progress updated
+        // Update mini player if it exists
+        if (this.miniPlayer) {
+            this.updateMiniPlayerProgress(this.currentPosition, this.textToType.length, percentage);
+        }
 
         // Calculate delay for next character
         const delay = this.calculateDelay();
@@ -583,7 +603,12 @@ class FlowTypingEngine {
         }
         this.sendMessage({ action: 'typingComplete' });
         
-        // Flow completed successfully
+        // Remove mini player after completion
+        if (this.miniPlayer) {
+            setTimeout(() => {
+                this.removeMiniPlayer();
+            }, 2000); // Keep visible for 2 seconds to show completion
+        }
     }
 
     sendMessage(message) {
@@ -704,6 +729,266 @@ class FlowTypingEngine {
         });
         
         return { cleanText, formattingMap };
+    }
+
+    createMiniPlayer(settings) {
+        // Remove any existing mini player
+        const existingPlayer = document.getElementById('flow-mini-player');
+        if (existingPlayer) {
+            existingPlayer.remove();
+        }
+
+        // Create mini player HTML
+        const playerHTML = `
+            <div id="flow-mini-player" class="flow-mini-player">
+                <div class="flow-mini-player-header">
+                    <div class="flow-mini-player-title">Flow Typing</div>
+                    <div class="flow-mini-player-controls">
+                        <button class="flow-mini-btn" id="flow-mini-pause">
+                            <span class="material-icons">pause</span>
+                        </button>
+                        <button class="flow-mini-btn" id="flow-mini-stop">
+                            <span class="material-icons">stop</span>
+                        </button>
+                        <button class="flow-mini-btn" id="flow-mini-close">
+                            <span class="material-icons">close</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="flow-mini-progress-container">
+                    <div class="flow-mini-progress-bar">
+                        <div class="flow-mini-progress-fill" id="flow-mini-progress-fill"></div>
+                    </div>
+                </div>
+                <div class="flow-mini-info">
+                    <div class="flow-mini-text" id="flow-mini-text">${settings.text.substring(0, 30)}...</div>
+                    <div class="flow-mini-stats" id="flow-mini-stats">0%</div>
+                </div>
+            </div>
+        `;
+
+        // Inject CSS for mini player
+        this.injectMiniPlayerCSS();
+
+        // Insert mini player into page
+        const playerDiv = document.createElement('div');
+        playerDiv.innerHTML = playerHTML;
+        document.body.appendChild(playerDiv.firstElementChild);
+
+        // Setup mini player events
+        this.setupMiniPlayerEvents();
+
+        // Show mini player with animation
+        setTimeout(() => {
+            const miniPlayer = document.getElementById('flow-mini-player');
+            if (miniPlayer) {
+                miniPlayer.classList.add('visible');
+            }
+        }, 100);
+
+        this.miniPlayer = document.getElementById('flow-mini-player');
+    }
+
+    injectMiniPlayerCSS() {
+        // Check if CSS already exists
+        if (document.getElementById('flow-mini-player-styles')) return;
+
+        // Inject Material Icons if not already present
+        if (!document.querySelector('link[href*="fonts.googleapis.com/icon"]')) {
+            const materialIconsLink = document.createElement('link');
+            materialIconsLink.rel = 'stylesheet';
+            materialIconsLink.href = 'https://fonts.googleapis.com/icon?family=Material+Icons';
+            document.head.appendChild(materialIconsLink);
+        }
+
+        const css = `
+            .flow-mini-player {
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                width: 320px;
+                background: rgba(0, 0, 0, 0.9);
+                backdrop-filter: blur(20px);
+                border-radius: 16px;
+                padding: 16px 20px;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                z-index: 10000;
+                transform: translateY(100px);
+                opacity: 0;
+                transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                font-family: 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
+            }
+
+            .flow-mini-player.visible {
+                transform: translateY(0);
+                opacity: 1;
+            }
+
+            .flow-mini-player-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 12px;
+            }
+
+            .flow-mini-player-title {
+                color: white;
+                font-size: 14px;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .flow-mini-player-title::before {
+                content: '⚡';
+                font-size: 16px;
+                filter: drop-shadow(0 0 4px rgba(74, 222, 128, 0.6));
+            }
+
+            .flow-mini-player-controls {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .flow-mini-btn {
+                background: rgba(255, 255, 255, 0.1);
+                border: none;
+                color: white;
+                width: 32px;
+                height: 32px;
+                border-radius: 8px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s ease;
+                font-size: 14px;
+            }
+
+            .flow-mini-btn .material-icons {
+                font-size: 16px;
+            }
+
+            .flow-mini-btn:hover {
+                background: rgba(255, 255, 255, 0.2);
+                transform: scale(1.05);
+            }
+
+            .flow-mini-progress-container {
+                margin-bottom: 8px;
+            }
+
+            .flow-mini-progress-bar {
+                width: 100%;
+                height: 6px;
+                background: rgba(255, 255, 255, 0.2);
+                border-radius: 3px;
+                overflow: hidden;
+                cursor: pointer;
+                position: relative;
+            }
+
+            .flow-mini-progress-fill {
+                height: 100%;
+                background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+                width: 0%;
+                transition: width 0.3s ease;
+                position: relative;
+            }
+
+            .flow-mini-progress-fill::after {
+                content: '';
+                position: absolute;
+                top: 0;
+                right: 0;
+                width: 8px;
+                height: 100%;
+                background: rgba(255, 255, 255, 0.8);
+                border-radius: 0 3px 3px 0;
+                box-shadow: 0 0 6px rgba(74, 222, 128, 0.6);
+            }
+
+            .flow-mini-info {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-size: 12px;
+                color: rgba(255, 255, 255, 0.8);
+            }
+
+            .flow-mini-text {
+                flex: 1;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                margin-right: 12px;
+            }
+
+            .flow-mini-stats {
+                font-weight: 500;
+                color: #4ade80;
+            }
+        `;
+
+        const style = document.createElement('style');
+        style.id = 'flow-mini-player-styles';
+        style.textContent = css;
+        document.head.appendChild(style);
+    }
+
+    setupMiniPlayerEvents() {
+        const pauseBtn = document.getElementById('flow-mini-pause');
+        const stopBtn = document.getElementById('flow-mini-stop');
+        const closeBtn = document.getElementById('flow-mini-close');
+
+        if (pauseBtn) {
+            pauseBtn.addEventListener('click', () => {
+                this.togglePause();
+                const icon = pauseBtn.querySelector('.material-icons');
+                if (icon) {
+                    icon.textContent = this.isPaused ? 'play_arrow' : 'pause';
+                }
+            });
+        }
+
+        if (stopBtn) {
+            stopBtn.addEventListener('click', () => {
+                this.stopTyping();
+                this.removeMiniPlayer();
+            });
+        }
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                this.removeMiniPlayer();
+            });
+        }
+    }
+
+    updateMiniPlayerProgress(current, total, percentage) {
+        const progressFill = document.getElementById('flow-mini-progress-fill');
+        const statsElement = document.getElementById('flow-mini-stats');
+        
+        if (progressFill) {
+            progressFill.style.width = `${percentage}%`;
+        }
+        
+        if (statsElement) {
+            statsElement.textContent = `${Math.round(percentage)}%`;
+        }
+    }
+
+    removeMiniPlayer() {
+        const miniPlayer = document.getElementById('flow-mini-player');
+        if (miniPlayer) {
+            miniPlayer.classList.remove('visible');
+            setTimeout(() => {
+                miniPlayer.remove();
+            }, 400);
+        }
     }
 }
 

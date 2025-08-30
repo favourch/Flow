@@ -17,6 +17,7 @@ class FlowPopup {
             preserveFormatting: document.getElementById('preserve-formatting'),
             naturalVariations: document.getElementById('natural-variations'),
             typoSimulation: document.getElementById('typo-simulation'),
+            runInBackground: document.getElementById('run-in-background'),
             startBtn: document.getElementById('start-btn'),
             stopBtn: document.getElementById('stop-btn'),
             pauseBtn: document.getElementById('pause-btn'),
@@ -51,7 +52,7 @@ class FlowPopup {
         this.elements.pauseBtn.addEventListener('click', () => this.togglePause());
 
         // Save settings on change
-        [this.elements.preserveFormatting, this.elements.naturalVariations, this.elements.typoSimulation]
+        [this.elements.preserveFormatting, this.elements.naturalVariations, this.elements.typoSimulation, this.elements.runInBackground]
             .forEach(el => el.addEventListener('change', () => this.saveSettings()));
 
         // Listen for messages from content script
@@ -80,6 +81,7 @@ class FlowPopup {
             preserveFormatting: this.elements.preserveFormatting.checked,
             naturalVariations: this.elements.naturalVariations.checked,
             typoSimulation: this.elements.typoSimulation.checked,
+            runInBackground: this.elements.runInBackground.checked,
             singleMethod: true // Always use single method to prevent duplicates
         };
 
@@ -98,6 +100,12 @@ class FlowPopup {
             this.updateUI();
             this.updateStatus('Flow is typing! Watch Google Docs...', 'running');
             this.elements.progressContainer.classList.remove('hidden');
+            
+            // If run in background is enabled, create mini player and close popup
+            if (settings.runInBackground) {
+                this.createMiniPlayer(settings);
+                window.close(); // Close the popup
+            }
         } catch (err) {
             this.updateStatus('Failed to start. Make sure Google Docs is loaded and you clicked in the document.', 'error');
         }
@@ -166,7 +174,19 @@ class FlowPopup {
         this.elements.startBtn.disabled = this.isRunning;
         this.elements.stopBtn.disabled = !this.isRunning;
         this.elements.pauseBtn.disabled = !this.isRunning;
-        this.elements.pauseBtn.textContent = this.isPaused ? '▶️ Resume' : '⏸️ Pause';
+        
+        // Update pause button content
+        const pauseIcon = this.elements.pauseBtn.querySelector('.material-icons');
+        const pauseText = this.elements.pauseBtn.childNodes[2]; // Text node after icon and gap
+        
+        if (this.isPaused) {
+            pauseIcon.textContent = 'play_arrow';
+            this.elements.pauseBtn.childNodes[2].textContent = 'Resume';
+        } else {
+            pauseIcon.textContent = 'pause';
+            this.elements.pauseBtn.childNodes[2].textContent = 'Pause';
+        }
+        
         this.elements.textInput.disabled = this.isRunning;
     }
 
@@ -186,6 +206,7 @@ class FlowPopup {
             preserveFormatting: this.elements.preserveFormatting.checked,
             naturalVariations: this.elements.naturalVariations.checked,
             typoSimulation: this.elements.typoSimulation.checked,
+            runInBackground: this.elements.runInBackground.checked,
             singleMethod: true
         };
         chrome.storage.sync.set({ flowSettings: settings });
@@ -201,9 +222,23 @@ class FlowPopup {
                 this.elements.preserveFormatting.checked = settings.preserveFormatting !== false;
                 this.elements.naturalVariations.checked = settings.naturalVariations || false;
                 this.elements.typoSimulation.checked = settings.typoSimulation || false;
+                this.elements.runInBackground.checked = settings.runInBackground || false;
             }
         } catch (err) {
             console.log('Failed to load settings:', err);
+        }
+    }
+
+    async createMiniPlayer(settings) {
+        // Send message to content script to create mini player
+        try {
+            const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+            await chrome.tabs.sendMessage(tab.id, {
+                action: 'createMiniPlayer',
+                settings: settings
+            });
+        } catch (err) {
+            console.log('Failed to create mini player:', err);
         }
     }
 }
