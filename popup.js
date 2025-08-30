@@ -79,7 +79,8 @@ class FlowPopup {
             wpm: parseInt(this.elements.wpmSlider.value),
             preserveFormatting: this.elements.preserveFormatting.checked,
             naturalVariations: this.elements.naturalVariations.checked,
-            typoSimulation: this.elements.typoSimulation.checked
+            typoSimulation: this.elements.typoSimulation.checked,
+            singleMethod: true // Always use single method to prevent duplicates
         };
 
         try {
@@ -184,7 +185,8 @@ class FlowPopup {
             wpm: parseInt(this.elements.wpmSlider.value),
             preserveFormatting: this.elements.preserveFormatting.checked,
             naturalVariations: this.elements.naturalVariations.checked,
-            typoSimulation: this.elements.typoSimulation.checked
+            typoSimulation: this.elements.typoSimulation.checked,
+            singleMethod: true
         };
         chrome.storage.sync.set({ flowSettings: settings });
     }

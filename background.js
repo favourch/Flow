@@ -35,7 +35,8 @@ class FlowBackground {
             wpm: 60,
             preserveFormatting: true,
             naturalVariations: false,
-            typoSimulation: false
+            typoSimulation: false,
+            singleMethod: true
         };
 
         try {
