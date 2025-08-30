@@ -1,0 +1,342 @@
+/* Flow Floating Widget Styles */
+#flow-floating-widget {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 320px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    z-index: 10000;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    border: 1px solid #e1e5e9;
+    transition: all 0.3s ease;
+    transform: translateY(0);
+}
+
+#flow-floating-widget.minimized {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+#flow-floating-widget.minimized .flow-widget-content {
+    display: none;
+}
+
+#flow-floating-widget.minimized .flow-minimize-btn {
+    display: none;
+}
+
+#flow-floating-widget.minimized::before {
+    content: '⚡';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px;
+    color: #667eea;
+}
+
+.flow-widget-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 12px 16px;
+    border-radius: 12px 12px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: move;
+    user-select: none;
+}
+
+.flow-widget-title {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.flow-widget-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.flow-minimize-btn,
+.flow-close-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease;
+}
+
+.flow-minimize-btn:hover,
+.flow-close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.flow-widget-content {
+    padding: 16px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.flow-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.flow-status.waiting {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.flow-status.ready {
+    background: #d4edda;
+    color: #155724;
+}
+
+.flow-status.running {
+    background: #cce5ff;
+    color: #004085;
+}
+
+.flow-status.error {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.flow-status-icon {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.flow-status.waiting .flow-status-icon {
+    background: #ffc107;
+    animation: pulse 2s infinite;
+}
+
+.flow-status.ready .flow-status-icon {
+    background: #28a745;
+}
+
+.flow-status.running .flow-status-icon {
+    background: #007bff;
+    animation: pulse 1s infinite;
+}
+
+.flow-status.error .flow-status-icon {
+    background: #dc3545;
+}
+
+.flow-text-area {
+    width: 100%;
+    height: 80px;
+    padding: 8px 12px;
+    border: 2px solid #e1e5e9;
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: inherit;
+    resize: vertical;
+    margin-bottom: 12px;
+    transition: border-color 0.2s ease;
+}
+
+.flow-text-area:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.flow-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.flow-wpm-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.flow-wpm-label {
+    font-size: 12px;
+    color: #555;
+    min-width: 80px;
+}
+
+.flow-wpm-slider {
+    flex: 1;
+    height: 4px;
+    border-radius: 2px;
+    background: #e1e5e9;
+    outline: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+}
+
+.flow-wpm-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #667eea;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.flow-options {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.flow-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #555;
+}
+
+.flow-option input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+}
+
+.flow-action-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.flow-btn {
+    flex: 1;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.flow-btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.flow-btn-primary:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.flow-btn-secondary {
+    background: #f8f9fa;
+    color: #6c757d;
+    border: 1px solid #dee2e6;
+}
+
+.flow-btn-secondary:hover:not(:disabled) {
+    background: #e9ecef;
+}
+
+.flow-btn-danger {
+    background: #dc3545;
+    color: white;
+}
+
+.flow-btn-danger:hover:not(:disabled) {
+    background: #c82333;
+}
+
+.flow-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.flow-progress {
+    margin-top: 12px;
+    display: none;
+}
+
+.flow-progress.visible {
+    display: block;
+}
+
+.flow-progress-bar {
+    width: 100%;
+    height: 4px;
+    background: #e1e5e9;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 4px;
+}
+
+.flow-progress-fill {
+    height: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.flow-progress-text {
+    font-size: 11px;
+    color: #6c757d;
+    text-align: center;
+}
+
+.flow-paste-btn {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    color: #6c757d;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    cursor: pointer;
+    align-self: flex-start;
+    margin-bottom: 8px;
+    transition: all 0.2s ease;
+}
+
+.flow-paste-btn:hover {
+    background: #e9ecef;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+/* Dragging styles */
+#flow-floating-widget.dragging {
+    transition: none;
+    cursor: move;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    #flow-floating-widget {
+        width: 280px;
+        right: 10px;
+        top: 10px;
+    }
+}

@@ -1,0 +1,25 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="64" cy="64" r="58" fill="url(#grad1)" stroke="white" stroke-width="4"/>
+  
+  <!-- Typing cursor/line -->
+  <rect x="35" y="45" width="3" height="35" fill="white" rx="1.5">
+    <animate attributeName="opacity" values="1;0;1" dur="1.2s" repeatCount="indefinite"/>
+  </rect>
+  
+  <!-- Text lines representing typing -->
+  <rect x="42" y="48" width="35" height="3" fill="white" rx="1.5" opacity="0.9"/>
+  <rect x="42" y="55" width="28" height="3" fill="white" rx="1.5" opacity="0.7"/>
+  <rect x="42" y="62" width="32" height="3" fill="white" rx="1.5" opacity="0.5"/>
+  <rect x="42" y="69" width="25" height="3" fill="white" rx="1.5" opacity="0.3"/>
+  
+  <!-- Flow text -->
+  <text x="64" y="95" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white" text-anchor="middle">Flow</text>
+</svg>

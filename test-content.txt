@@ -1,0 +1,31 @@
+Welcome to **Flow** - Natural Typing Simulator!
+
+This is a sample text that you can use to test the Flow Chrome extension. The extension will simulate natural typing by replaying this content character by character at your chosen Words Per Minute (WPM) speed.
+
+**Key Features:**
+• Customizable typing speed (10-200 WPM)
+• Natural typing variations with random pauses
+• Optional typo simulation with corrections
+• **Format preservation** for basic styling
+• Real-time progress tracking
+• Pause and resume functionality
+
+*How It Works:*
+Flow injects a content script into Google Docs that simulates real keystrokes using the browser's input events. This ensures that the Google Docs revision history shows the text as being typed naturally, rather than pasted all at once.
+
+**Perfect for:**
+- Content creators who want *natural-looking* edit histories
+- Testing typing interfaces and applications
+- Accessibility demonstrations
+- Educational purposes
+
+Try different WPM settings to see how the typing speed affects the natural feel of the simulation. Lower speeds (30-60 WPM) tend to look more realistic for human typing, while higher speeds (100+ WPM) are useful for quickly inputting large amounts of text.
+
+**Special Characters Test:**
+Smart quotes: "Hello" and 'World'
+Em dash — and en dash –
+Ellipsis… and copyright ©
+Non-breaking spaces and   multiple   spaces
+Trademark™ and registered® symbols
+
+*Enjoy using Flow!*

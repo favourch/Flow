@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flow - Natural Typing Simulator</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Flow</h1>
+            <p>Natural Typing Simulator</p>
+        </header>
+
+        <div class="content">
+            <div class="input-section">
+                <label for="text-input">Text to Type:</label>
+                <textarea id="text-input" placeholder="Paste your content here or click 'Paste from Clipboard'"></textarea>
+                <button id="paste-btn" class="secondary-btn">📋 Paste from Clipboard</button>
+            </div>
+
+            <div class="controls-section">
+                <div class="wpm-control">
+                    <label for="wpm-slider">Typing Speed: <span id="wpm-value">60</span> WPM</label>
+                    <input type="range" id="wpm-slider" min="10" max="200" value="60" class="slider">
+                </div>
+
+                <div class="format-options">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="preserve-formatting" checked>
+                        <span class="checkmark"></span>
+                        Preserve formatting
+                    </label>
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="natural-variations">
+                        <span class="checkmark"></span>
+                        Natural typing variations
+                    </label>
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="typo-simulation">
+                        <span class="checkmark"></span>
+                        Simulate typos & corrections
+                    </label>
+                </div>
+            </div>
+
+            <div class="action-section">
+                <button id="start-btn" class="primary-btn">▶️ Start Flow</button>
+                <button id="stop-btn" class="danger-btn" disabled>⏹️ Stop</button>
+                <button id="pause-btn" class="secondary-btn" disabled>⏸️ Pause</button>
+            </div>
+
+            <div class="status-section">
+                <div id="status" class="status-idle">Ready to start</div>
+                <div id="progress-container" class="hidden">
+                    <div class="progress-bar">
+                        <div id="progress-fill"></div>
+                    </div>
+                    <div id="progress-text">0% complete</div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <div class="tips">
+                💡 Click in Google Docs editor first, then start Flow. The extension will automatically focus the editor and begin typing.
+            </div>
+        </footer>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>

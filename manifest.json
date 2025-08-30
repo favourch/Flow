@@ -1,0 +1,33 @@
+{
+  "manifest_version": 3,
+  "name": "Flow - Natural Typing Simulator",
+  "version": "1.0.0",
+  "description": "Simulate natural typing in Google Docs with customizable WPM speed and formatting preservation",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "clipboardRead"
+  ],
+  "host_permissions": [
+    "https://docs.google.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Flow - Natural Typing Simulator"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://docs.google.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
