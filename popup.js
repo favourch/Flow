@@ -39,7 +39,7 @@ class FlowPopup {
             try {
                 const text = await navigator.clipboard.readText();
                 this.elements.textInput.value = text;
-                this.updateStatus('Text pasted from clipboard', 'idle');
+                this.updateStatus('Text pasted! Now click in Google Docs where you want to start typing.', 'idle');
             } catch (err) {
                 this.updateStatus('Failed to read clipboard. Please paste manually.', 'error');
             }
@@ -84,7 +84,7 @@ class FlowPopup {
 
         try {
             // Update status to inform user about focus handling
-            this.updateStatus('Preparing Google Docs editor...', 'running');
+            this.updateStatus('Starting Flow... Make sure you clicked in Google Docs first!', 'running');
             
             // Send message to content script
             await chrome.tabs.sendMessage(tab.id, {
@@ -95,10 +95,10 @@ class FlowPopup {
             this.isRunning = true;
             this.isPaused = false;
             this.updateUI();
-            this.updateStatus('Flow started! Check Google Docs...', 'running');
+            this.updateStatus('Flow is typing! Watch Google Docs...', 'running');
             this.elements.progressContainer.classList.remove('hidden');
         } catch (err) {
-            this.updateStatus('Failed to start. Make sure Google Docs is loaded.', 'error');
+            this.updateStatus('Failed to start. Make sure Google Docs is loaded and you clicked in the document.', 'error');
         }
     }
 

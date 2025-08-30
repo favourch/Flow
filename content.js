@@ -215,6 +215,7 @@ class FlowTypingEngine {
 
         // Update widget UI
         this.updateWidgetStatus('Flow is typing...', 'running');
+        this.updateStepsForTyping();
         this.updateWidgetUI();
 
         // Small delay to ensure focus is established
@@ -234,6 +235,7 @@ class FlowTypingEngine {
         
         // Update widget UI
         this.updateWidgetStatus('Flow stopped', 'ready');
+        this.updateStepProgress(); // Reset to appropriate step
         this.updateWidgetUI();
         if (this.widgetElements) {
             this.widgetElements.progress.classList.remove('visible');
@@ -629,6 +631,7 @@ class FlowTypingEngine {
         
         // Update widget UI
         this.updateWidgetStatus('Flow completed successfully!', 'ready');
+        this.updateStepProgress(); // Reset to appropriate step
         this.updateWidgetUI();
         if (this.widgetElements) {
             this.widgetElements.progress.classList.remove('visible');
@@ -819,6 +822,90 @@ class FlowTypingEngine {
                 padding: 16px;
                 max-height: 400px;
                 overflow-y: auto;
+            }
+
+            .flow-steps-guide {
+                margin-bottom: 16px;
+                border: 1px solid #e1e5e9;
+                border-radius: 8px;
+                padding: 12px;
+                background: #f8f9fa;
+            }
+
+            .flow-step {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                margin-bottom: 8px;
+                padding: 8px;
+                border-radius: 6px;
+                transition: all 0.2s ease;
+            }
+
+            .flow-step:last-child {
+                margin-bottom: 0;
+            }
+
+            .flow-step.active {
+                background: #e7f3ff;
+                border: 1px solid #b3d9ff;
+            }
+
+            .flow-step.completed {
+                background: #e8f5e8;
+                border: 1px solid #c3e6c3;
+            }
+
+            .flow-step-number {
+                width: 24px;
+                height: 24px;
+                border-radius: 50%;
+                background: #6c757d;
+                color: white;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 12px;
+                font-weight: 600;
+                flex-shrink: 0;
+            }
+
+            .flow-step.active .flow-step-number {
+                background: #007bff;
+                animation: pulse 2s infinite;
+            }
+
+            .flow-step.completed .flow-step-number {
+                background: #28a745;
+            }
+
+            .flow-step-content {
+                flex: 1;
+            }
+
+            .flow-step-title {
+                font-size: 13px;
+                font-weight: 600;
+                color: #333;
+                margin-bottom: 2px;
+            }
+
+            .flow-step-desc {
+                font-size: 11px;
+                color: #6c757d;
+            }
+
+            .flow-step-status {
+                font-size: 16px;
+                flex-shrink: 0;
+            }
+
+            .flow-step.active .flow-step-status::before {
+                content: '👉';
+            }
+
+            .flow-step.completed .flow-step-status::before {
+                content: '✅';
             }
 
             .flow-status {
@@ -1097,16 +1184,48 @@ class FlowTypingEngine {
                     </div>
                 </div>
                 <div class="flow-widget-content">
-                    <div class="flow-status waiting">
-                        <div class="flow-status-icon"></div>
-                        <span>Click in Google Docs editor to activate</span>
+                    <div class="flow-steps-guide">
+                        <div class="flow-step" data-step="1">
+                            <div class="flow-step-number">1</div>
+                            <div class="flow-step-content">
+                                <div class="flow-step-title">Add your text</div>
+                                <div class="flow-step-desc">Paste or type your content below</div>
+                            </div>
+                            <div class="flow-step-status">⏳</div>
+                        </div>
+                        <div class="flow-step" data-step="2">
+                            <div class="flow-step-number">2</div>
+                            <div class="flow-step-content">
+                                <div class="flow-step-title">Click in Google Docs</div>
+                                <div class="flow-step-desc">Click where you want to start typing</div>
+                            </div>
+                            <div class="flow-step-status">⏳</div>
+                        </div>
+                        <div class="flow-step" data-step="3">
+                            <div class="flow-step-number">3</div>
+                            <div class="flow-step-content">
+                                <div class="flow-step-title">Adjust settings & start</div>
+                                <div class="flow-step-desc">Set speed and click Start button</div>
+                            </div>
+                            <div class="flow-step-status">⏳</div>
+                        </div>
                     </div>
                     
-                    <button class="flow-force-enable-btn" style="background: #ffc107; color: #856404; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-bottom: 4px; cursor: pointer;">🔧 Force Enable (Debug)</button>
-                    <button class="flow-test-paste-btn" style="background: #17a2b8; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-bottom: 4px; cursor: pointer;">🧪 Test Paste</button>
-                    <button class="flow-multi-method-btn" style="background: #28a745; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-bottom: 4px; cursor: pointer;">🔀 Try Multi-Method</button>
-                    <button class="flow-clipboard-only-btn" style="background: #6f42c1; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-bottom: 4px; cursor: pointer;">📋 Clipboard Only Mode</button>
-                    <button class="flow-direct-dom-btn" style="background: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-bottom: 8px; cursor: pointer;">⚡ Direct DOM Method</button>
+                    <div class="flow-status waiting">
+                        <div class="flow-status-icon"></div>
+                        <span>Step 1: Add your text below</span>
+                    </div>
+                    
+                    <div class="flow-debug-tools" style="display: none;">
+                        <div style="font-size: 10px; color: #6c757d; margin-bottom: 6px; text-align: center;">Debug Tools</div>
+                        <button class="flow-force-enable-btn" style="background: #ffc107; color: #856404; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-bottom: 4px; cursor: pointer;">🔧 Force Enable</button>
+                        <button class="flow-test-paste-btn" style="background: #17a2b8; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-bottom: 4px; cursor: pointer;">🧪 Test Paste</button>
+                        <button class="flow-multi-method-btn" style="background: #28a745; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-bottom: 4px; cursor: pointer;">🔀 Multi-Method</button>
+                        <button class="flow-clipboard-only-btn" style="background: #6f42c1; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-bottom: 4px; cursor: pointer;">📋 Clipboard Only</button>
+                        <button class="flow-direct-dom-btn" style="background: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-bottom: 8px; cursor: pointer;">⚡ Direct DOM</button>
+                        <button class="flow-toggle-debug-btn" style="background: #6c757d; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-bottom: 8px; cursor: pointer;">Hide Debug</button>
+                    </div>
+                    <button class="flow-show-debug-btn" style="background: #f8f9fa; border: 1px solid #dee2e6; color: #6c757d; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-bottom: 8px; cursor: pointer;">🔧 Show Debug Tools</button>
                     
                     <button class="flow-paste-btn">📋 Paste from Clipboard</button>
                     <textarea class="flow-text-area" placeholder="Paste your text here or use the clipboard button above..."></textarea>
@@ -1170,6 +1289,7 @@ class FlowTypingEngine {
         
         // Initial ready state check
         setTimeout(() => {
+            this.updateStepProgress();
             this.checkReadyState();
         }, 100);
     }
@@ -1186,6 +1306,9 @@ class FlowTypingEngine {
             multiMethodBtn: this.floatingWidget.querySelector('.flow-multi-method-btn'),
             clipboardOnlyBtn: this.floatingWidget.querySelector('.flow-clipboard-only-btn'),
             directDomBtn: this.floatingWidget.querySelector('.flow-direct-dom-btn'),
+            showDebugBtn: this.floatingWidget.querySelector('.flow-show-debug-btn'),
+            toggleDebugBtn: this.floatingWidget.querySelector('.flow-toggle-debug-btn'),
+            debugTools: this.floatingWidget.querySelector('.flow-debug-tools'),
             pasteBtn: this.floatingWidget.querySelector('.flow-paste-btn'),
             textArea: this.floatingWidget.querySelector('.flow-text-area'),
             wpmSlider: this.floatingWidget.querySelector('.flow-wpm-slider'),
@@ -1204,7 +1327,11 @@ class FlowTypingEngine {
             header: this.floatingWidget.querySelector('.flow-widget-header'),
             textPreview: this.floatingWidget.querySelector('.flow-text-preview'),
             previewContent: this.floatingWidget.querySelector('.flow-preview-content'),
-            previewStats: this.floatingWidget.querySelector('.flow-preview-stats')
+            previewStats: this.floatingWidget.querySelector('.flow-preview-stats'),
+            stepsGuide: this.floatingWidget.querySelector('.flow-steps-guide'),
+            step1: this.floatingWidget.querySelector('[data-step="1"]'),
+            step2: this.floatingWidget.querySelector('[data-step="2"]'),
+            step3: this.floatingWidget.querySelector('[data-step="3"]')
         };
 
         // Minimize/maximize
@@ -1294,12 +1421,25 @@ class FlowTypingEngine {
             console.log('Flow: Switched to direct DOM manipulation mode');
         });
 
+        // Debug tools toggle
+        elements.showDebugBtn.addEventListener('click', () => {
+            elements.debugTools.style.display = 'block';
+            elements.showDebugBtn.style.display = 'none';
+        });
+
+        elements.toggleDebugBtn.addEventListener('click', () => {
+            elements.debugTools.style.display = 'none';
+            elements.showDebugBtn.style.display = 'block';
+        });
+
         // Paste from clipboard
         elements.pasteBtn.addEventListener('click', async () => {
             try {
                 const text = await navigator.clipboard.readText();
                 elements.textArea.value = text;
-                this.updateWidgetStatus('Text pasted from clipboard', 'ready');
+                this.updateWidgetStatus('Text pasted! Now click in Google Docs where you want to start typing.', 'ready');
+                this.updateTextPreview();
+                this.updateStepProgress();
                 this.checkReadyState();
             } catch (err) {
                 this.updateWidgetStatus('Failed to read clipboard', 'error');
@@ -1330,6 +1470,7 @@ class FlowTypingEngine {
         // Text area changes
         elements.textArea.addEventListener('input', () => {
             this.updateTextPreview();
+            this.updateStepProgress();
             this.checkReadyState();
         });
 
@@ -1450,7 +1591,8 @@ class FlowTypingEngine {
             
             if (this.editor) {
                 console.log('Flow: Google Docs editor detected:', this.editor);
-                this.updateWidgetStatus('Google Docs editor detected! Ready to start.', 'ready');
+                this.updateWidgetStatus('Perfect! Now adjust your settings and click Start.', 'ready');
+                this.updateStepProgress();
                 this.checkReadyState();
             } else {
                 console.log('Flow: Editor click detected but could not find editor element');
@@ -1459,7 +1601,8 @@ class FlowTypingEngine {
                     this.editor = this.findGoogleDocsEditor();
                     if (this.editor) {
                         console.log('Flow: Google Docs editor found on retry:', this.editor);
-                        this.updateWidgetStatus('Google Docs editor detected! Ready to start.', 'ready');
+                        this.updateWidgetStatus('Perfect! Now adjust your settings and click Start.', 'ready');
+                        this.updateStepProgress();
                         this.checkReadyState();
                     } else {
                         this.updateWidgetStatus('Could not find Google Docs editor. Try clicking in the document again.', 'error');
@@ -1500,6 +1643,45 @@ class FlowTypingEngine {
         
         this.widgetElements.status.className = `flow-status ${type}`;
         this.widgetElements.status.querySelector('span').textContent = message;
+    }
+
+    updateStepProgress() {
+        if (!this.widgetElements) return;
+        
+        const hasText = this.widgetElements.textArea.value.trim().length > 0;
+        const hasEditor = this.editorClickDetected && this.editor;
+        
+        // Reset all steps
+        this.widgetElements.step1.classList.remove('active', 'completed');
+        this.widgetElements.step2.classList.remove('active', 'completed');
+        this.widgetElements.step3.classList.remove('active', 'completed');
+        
+        if (hasText && hasEditor) {
+            // Both text and editor are ready - activate step 3
+            this.widgetElements.step1.classList.add('completed');
+            this.widgetElements.step2.classList.add('completed');
+            this.widgetElements.step3.classList.add('active');
+        } else if (hasText) {
+            // Text is ready, need editor - activate step 2
+            this.widgetElements.step1.classList.add('completed');
+            this.widgetElements.step2.classList.add('active');
+            this.updateWidgetStatus('Great! Now click in Google Docs where you want to start typing.', 'ready');
+        } else {
+            // Need text - activate step 1
+            this.widgetElements.step1.classList.add('active');
+        }
+    }
+
+    updateStepsForTyping() {
+        if (!this.widgetElements) return;
+        
+        // Mark all steps as completed when typing starts
+        this.widgetElements.step1.classList.remove('active');
+        this.widgetElements.step1.classList.add('completed');
+        this.widgetElements.step2.classList.remove('active');
+        this.widgetElements.step2.classList.add('completed');
+        this.widgetElements.step3.classList.remove('active');
+        this.widgetElements.step3.classList.add('completed');
     }
 
     startTypingFromWidget() {
@@ -1569,6 +1751,7 @@ class FlowTypingEngine {
         
         // Initial text preview update
         this.updateTextPreview();
+        this.updateStepProgress();
     }
 
     updateTextPreview() {
