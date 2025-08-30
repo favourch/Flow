@@ -62,12 +62,6 @@ class FlowPopup {
     }
 
     async startFlow() {
-        const text = this.elements.textInput.value.trim();
-        if (!text) {
-            this.updateStatus('Please enter some text to type', 'error');
-            return;
-        }
-
         // Check if we're on a Google Docs page
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
         if (!tab.url.includes('docs.google.com')) {
@@ -75,39 +69,16 @@ class FlowPopup {
             return;
         }
 
-        const settings = {
-            text: text,
-            wpm: parseInt(this.elements.wpmSlider.value),
-            preserveFormatting: this.elements.preserveFormatting.checked,
-            naturalVariations: this.elements.naturalVariations.checked,
-            typoSimulation: this.elements.typoSimulation.checked,
-            runInBackground: this.elements.runInBackground.checked,
-            singleMethod: true // Always use single method to prevent duplicates
-        };
-
         try {
-            // Update status to inform user about focus handling
-            this.updateStatus('Starting Flow... Make sure you clicked in Google Docs first!', 'running');
-            
-            // Send message to content script
+            // Show the overlay interface instead of using popup
             await chrome.tabs.sendMessage(tab.id, {
-                action: 'startTyping',
-                settings: settings
+                action: 'showOverlay'
             });
-
-            this.isRunning = true;
-            this.isPaused = false;
-            this.updateUI();
-            this.updateStatus('Flow is typing! Watch Google Docs...', 'running');
-            this.elements.progressContainer.classList.remove('hidden');
             
-            // If run in background is enabled, create mini player and close popup
-            if (settings.runInBackground) {
-                this.createMiniPlayer(settings);
-                window.close(); // Close the popup
-            }
+            // Close the popup since we're now using the overlay
+            window.close();
         } catch (err) {
-            this.updateStatus('Failed to start. Make sure Google Docs is loaded and you clicked in the document.', 'error');
+            this.updateStatus('Failed to open Flow interface. Make sure Google Docs is loaded.', 'error');
         }
     }
 

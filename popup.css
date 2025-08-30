@@ -82,11 +82,57 @@ header p {
 }
 
 .content {
-    padding: 24px;
+    padding: 32px;
     display: flex;
     flex-direction: column;
     gap: 24px;
     background: linear-gradient(135deg, rgba(254, 243, 199, 0.3) 0%, rgba(254, 243, 199, 0.1) 100%);
+}
+
+.launcher-section {
+    display: grid;
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: 20px;
+    background: linear-gradient(135deg, rgba(237, 233, 254, 1) 0%, rgba(237, 233, 254, 0.8) 100%);
+    padding: 32px;
+    border-radius: 20px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(237, 233, 254, 0.5);
+    text-align: center;
+}
+
+.launcher-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 24px rgba(74, 222, 128, 0.3);
+    animation: float 3s ease-in-out infinite;
+}
+
+.launcher-icon .material-icons {
+    font-size: 40px;
+    color: white;
+}
+
+.launcher-section h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #3c4043;
+    margin: 0;
+}
+
+.launcher-section p {
+    font-size: 15px;
+    color: #5f6368;
+    font-weight: 400;
+    line-height: 1.5;
+    margin: 0;
+    max-width: 300px;
 }
 
 .input-section {
