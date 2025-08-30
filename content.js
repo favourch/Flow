@@ -327,6 +327,9 @@ class FlowTypingEngine {
         // Check if we should use single method to prevent duplicates
         const useSingleMethod = this.settings.singleMethod !== false;
         let methodsAttempted = [];
+        let typingSucceeded = false;
+        
+        console.log(`Flow: Single method mode: ${useSingleMethod}`);
         
         // If clipboard-only mode is enabled, only use clipboard paste
         if (this.clipboardOnlyMode && !isEnter && char.length === 1) {
@@ -356,44 +359,44 @@ class FlowTypingEngine {
             }
         }
         
-        // Method 1: execCommand (try first but don't rely on it exclusively)
-        let execSuccess = false;
-        try {
-            if (isEnter) {
-                execSuccess = document.execCommand('insertParagraph', false) || 
-                             document.execCommand('insertHTML', false, '<br>');
-            } else {
-                execSuccess = document.execCommand('insertText', false, char);
-            }
-            methodsAttempted.push(`execCommand: ${execSuccess}`);
-            
-            if (execSuccess) {
-                console.log(`Flow: execCommand succeeded for "${char}"`);
-                if (useSingleMethod) {
-                    return; // Exit early only if single method mode AND it worked
+        // Method 1: execCommand (most reliable for Google Docs)
+        if (!typingSucceeded) {
+            try {
+                let execSuccess = false;
+                if (isEnter) {
+                    execSuccess = document.execCommand('insertParagraph', false) || 
+                                 document.execCommand('insertHTML', false, '<br>');
+                } else {
+                    execSuccess = document.execCommand('insertText', false, char);
                 }
+                methodsAttempted.push(`execCommand: ${execSuccess}`);
+                
+                if (execSuccess) {
+                    console.log(`Flow: execCommand succeeded for "${char}"`);
+                    typingSucceeded = true;
+                    if (useSingleMethod) {
+                        console.log(`Flow: Single method mode - stopping after successful execCommand`);
+                        return; // Exit immediately in single method mode
+                    }
+                }
+            } catch (e) {
+                methodsAttempted.push(`execCommand: failed (${e.message})`);
+                console.log('Flow: execCommand failed:', e);
             }
-        } catch (e) {
-            methodsAttempted.push(`execCommand: failed (${e.message})`);
-            console.log('Flow: execCommand failed:', e);
         }
 
-        // If single method mode and execCommand worked, we already returned
-        // If single method mode and execCommand failed, try keyboard simulation as backup
-        if (useSingleMethod && !execSuccess) {
-            console.log(`Flow: Single method mode - execCommand failed, trying keyboard simulation as backup`);
-        }
-
-        // Method 2: Clipboard paste (try this before keyboard events)
-        if (!isEnter && char.length === 1) {
+        // Method 2: Clipboard paste (only if execCommand failed or multi-method mode)
+        if (!typingSucceeded && !isEnter && char.length === 1) {
             try {
                 await navigator.clipboard.writeText(char);
                 const pasteSuccess = document.execCommand('paste');
                 methodsAttempted.push(`clipboard: ${pasteSuccess}`);
                 if (pasteSuccess) {
                     console.log(`Flow: Clipboard paste succeeded for "${char}"`);
+                    typingSucceeded = true;
                     if (useSingleMethod) {
-                        return; // Exit early in single method mode
+                        console.log(`Flow: Single method mode - stopping after successful clipboard paste`);
+                        return; // Exit immediately in single method mode
                     }
                 }
             } catch (e) {
@@ -402,27 +405,30 @@ class FlowTypingEngine {
             }
         }
 
-        // Method 3: Keyboard event simulation (fallback)
-        try {
-            if (isEnter) {
-                this.simulateKeyPress('Enter', 13);
-            } else {
-                this.simulateKeyPress(char, keyCode);
+        // Method 3: Keyboard event simulation (only if previous methods failed or multi-method mode)
+        if (!typingSucceeded || !useSingleMethod) {
+            try {
+                if (isEnter) {
+                    this.simulateKeyPress('Enter', 13);
+                } else {
+                    this.simulateKeyPress(char, keyCode);
+                }
+                methodsAttempted.push('keyboardEvents: attempted');
+                console.log(`Flow: Keyboard simulation attempted for "${char}"`);
+                typingSucceeded = true;
+                
+                if (useSingleMethod) {
+                    console.log(`Flow: Single method mode - stopping after keyboard simulation`);
+                    return; // Exit immediately in single method mode
+                }
+            } catch (e) {
+                methodsAttempted.push(`keyboardEvents: failed (${e.message})`);
+                console.log('Flow: Keyboard simulation failed:', e);
             }
-            methodsAttempted.push('keyboardEvents: attempted');
-            console.log(`Flow: Keyboard simulation attempted for "${char}"`);
-            
-            if (useSingleMethod) {
-                return; // In single method mode, don't try more methods
-            }
-        } catch (e) {
-            methodsAttempted.push(`keyboardEvents: failed (${e.message})`);
-            console.log('Flow: Keyboard simulation failed:', e);
         }
 
-        // Only try additional methods if NOT in single method mode
-        if (!useSingleMethod) {
-            // Method 4: Input event simulation (last resort)
+        // Method 4: Input event simulation (only in multi-method mode as last resort)
+        if (!useSingleMethod && !typingSucceeded) {
             try {
                 const inputEvent = new InputEvent('input', {
                     inputType: 'insertText',
@@ -440,7 +446,7 @@ class FlowTypingEngine {
             }
         }
         
-        console.log(`Flow: Methods attempted for "${char}":`, methodsAttempted);
+        console.log(`Flow: Methods attempted for "${char}":`, methodsAttempted, `Single method: ${useSingleMethod}, Success: ${typingSucceeded}`);
     }
 
     async ensureGoogleDocsFocus() {
@@ -1257,7 +1263,7 @@ class FlowTypingEngine {
                             </label>
                             <label class="flow-option">
                                 <input type="checkbox" class="flow-single-method" checked>
-                                Use single typing method (prevents duplicates)
+                                <strong>Prevent duplicate characters</strong> (recommended)
                             </label>
                         </div>
                         
@@ -1401,7 +1407,7 @@ class FlowTypingEngine {
         elements.multiMethodBtn.addEventListener('click', () => {
             // Temporarily disable single method mode for testing
             elements.singleMethod.checked = false;
-            this.updateWidgetStatus('Multi-method mode enabled for testing', 'ready');
+            this.updateWidgetStatus('Multi-method mode enabled - WARNING: May cause duplicate characters!', 'error');
             console.log('Flow: Switched to multi-method mode for debugging');
         });
 
